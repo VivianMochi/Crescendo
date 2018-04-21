@@ -17,8 +17,12 @@ public:
 	void init();
 	void update(sf::Time elapsed);
 
+	float getVolume() const;
+
 private:
 	virtual void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
+
+	void setVolume(float volume);
 
 	State *state = nullptr;
 	sf::Sprite sprite;
@@ -31,6 +35,8 @@ private:
 	float frameCounter = 0;
 	bool dash = false;
 	float dashCooldown = 0;
+
+	float volume = 0;
 
 	sf::Sound softStepSound;
 	sf::Sound loudStepSound;

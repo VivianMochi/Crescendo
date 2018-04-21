@@ -11,6 +11,7 @@ public:
 
 	void setTexture(const sf::Texture &texture);
 	void setText(std::string text);
+	void setColor(sf::Color color);
 	std::string getText();
 
 	std::string text;
@@ -19,4 +20,6 @@ private:
 	void draw(sf::RenderTarget &target, sf::RenderStates states) const override;
 
 	const sf::Texture *texture;
+
+	sf::Color color = sf::Color::Black;
 };

@@ -23,6 +23,10 @@ void BitmapText::setText(std::string text) {
 	this->text = text;
 }
 
+void BitmapText::setColor(sf::Color color) {
+	this->color = color;
+}
+
 std::string BitmapText::getText() {
 	return this->text;
 }
@@ -31,6 +35,7 @@ void BitmapText::draw(sf::RenderTarget &target, sf::RenderStates states) const {
 	sf::Vector2f currentPosition = getPosition();
 	if (texture) {
 		sf::Sprite glyph(*texture);
+		glyph.setColor(color);
 		for (int i = 0; i < text.length(); i++) {
 			glyph.setPosition(currentPosition);
 			char character = std::toupper(text[i]);

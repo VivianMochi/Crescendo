@@ -1,6 +1,7 @@
 #pragma once
 
 #include "state.hpp"
+#include "bitmap_text.hpp"
 #include "infiltrator.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -16,13 +17,22 @@ public:
 	void render(sf::RenderWindow &window);
 
 	bool checkCollision(sf::Vector2f position, int width, int height);
-	void emitSound(sf::Vector2f position, int volume);
+	bool isMetal(sf::Vector2f position);
 
 private:
 	int level = 0;
-	float volume = 0;
+	float volume = 1;
+
+	sf::Sprite elevator;
+	BitmapText floorDisplay;
+	sf::Sprite levelSprite;
+	sf::Image levelMask;
+	Infiltrator player;
+
+	sf::Sprite hud;
+	sf::Sprite ambientBar;
+	sf::Sprite personalBar;
 
 	sf::Music music;
-	Infiltrator player;
 };
 

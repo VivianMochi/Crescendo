@@ -8,6 +8,9 @@ void Infiltrator::setState(State *state) {
 }
 
 void Infiltrator::init() {
+	position.x = 19;
+	position.y = 112.9;
+
 	sprite.setTexture(state->loadTexture("img/infiltrator.png"));
 	sprite.setTextureRect(sf::IntRect(0, 0, 14, 14));
 
@@ -21,6 +24,8 @@ void Infiltrator::update(sf::Time elapsed) {
 	float seconds = elapsed.asSeconds();
 
 	// Tick variables
+	volume *= std::pow(.2, seconds);
+
 	velocity.y += GRAVITY * seconds;
 
 	if (dashCooldown > 0) {
@@ -64,10 +69,12 @@ void Infiltrator::update(sf::Time elapsed) {
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && onGround) {
 		velocity.y -= JUMP;
 		jumpSound.play();
+		setVolume(2);
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X) && dashCooldown <= 0) {
 		dash = true;
 		dashSound.play();
+		setVolume(3);
 	}
 
 	// Do movement
@@ -118,7 +125,14 @@ void Infiltrator::update(sf::Time elapsed) {
 				frameCounter = 0;
 				frame++;
 				if (frame == 2) {
-					softStepSound.play();
+					if (((LevelState*)state)->isMetal(position + sf::Vector2f(2, 13))) {
+						loudStepSound.play();
+						setVolume(2);
+					}
+					else {
+						softStepSound.play();
+						setVolume(1);
+					}
 				}
 				else if (frame > 4) {
 					frame = 1;
@@ -134,6 +148,16 @@ void Infiltrator::update(sf::Time elapsed) {
 	sprite.setPosition(position + sf::Vector2f(facingRight ? -5 : 9, -2));
 }
 
+float Infiltrator::getVolume() const {
+	return volume;
+}
+
 void Infiltrator::draw(sf::RenderTarget &target, sf::RenderStates states) const {
 	target.draw(sprite, states);
+}
+
+void Infiltrator::setVolume(float volume) {
+	if (volume > this->volume) {
+		this->volume = volume;
+	}
 }
