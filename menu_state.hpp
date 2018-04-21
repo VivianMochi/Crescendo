@@ -18,4 +18,7 @@ public:
 private:
 	sf::Sprite title;
 	BitmapText text;
+	sf::Music music;
+
+	float beatCounter = 0;
 };

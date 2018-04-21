@@ -15,8 +15,12 @@ void MenuState::init() {
 	title.setTextureRect(sf::IntRect(0, 0, 180, 40));
 	title.setPosition(120 - 90, 0);
 
-	text = BitmapText(loadTexture("img/font.png"), "Begin\nHelp\nQuit\n");
+	text = BitmapText(loadTexture("img/font.png"), "Missions\nCredits\nQuit\n");
 	text.setPosition(50, 50);
+
+	music.openFromFile("mus/menu.ogg");
+	music.setLoop(true);
+	music.play();
 }
 
 void MenuState::gotEvent(sf::Event event) {
@@ -28,10 +32,14 @@ void MenuState::gotEvent(sf::Event event) {
 }
 
 void MenuState::update(sf::Time elapsed) {
-
+	beatCounter += elapsed.asSeconds();
+	if (beatCounter >= 0.9230769f) {
+		beatCounter -= 0.9230769f;
+	}
 }
 
 void MenuState::render(sf::RenderWindow &window) {
-	window.draw(title);
+	if (beatCounter > .1)
+		window.draw(title);
 	window.draw(text);
 }
