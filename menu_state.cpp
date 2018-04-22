@@ -28,6 +28,10 @@ void MenuState::init() {
 	creditText = BitmapText(loadTexture("img/font.png"), "A Game by Nate Largo");
 	creditText.setPosition(50, 125);
 
+	loading = BitmapText(loadTexture("img/font.png"), "Loading...");
+	loading.setColor(sf::Color::White);
+	loading.setPosition(183, 125);
+
 	elevator.setTexture(loadTexture("img/elevator.png"));
 	elevator.setTextureRect(sf::IntRect(0, 0, 40, 135));
 	elevator.setPosition(-40, 0);
@@ -71,7 +75,7 @@ void MenuState::update(sf::Time elapsed) {
 			background.setScale(beatCounter / 2, 1);
 			background.setPosition(120 * (1 - beatCounter / 2), 0);
 
-			elevator.setPosition(-40 * std::pow(0.03, 2 - beatCounter), 0);
+			elevator.setPosition(-40 * std::pow(0.09, 2 - beatCounter), 0);
 
 			music.setVolume(100 * beatCounter / 2);
 		}
@@ -110,6 +114,9 @@ void MenuState::render(sf::RenderWindow &window) {
 	
 	if (menuState == 1) {
 		window.draw(elevator);
+		if (beatCounter <= 0) {
+			window.draw(loading);
+		}
 	}
 }
 

@@ -80,7 +80,6 @@ void LevelState::init() {
 			mus->play();
 		}
 		elevator.setTextureRect(sf::IntRect(40, 0, 40, 135));
-		// Todo: fix player making noise when intro is skipped
 	}
 
 	setupLevel();

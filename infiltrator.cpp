@@ -149,7 +149,9 @@ void Infiltrator::update(sf::Time elapsed) {
 	}
 	else {
 		position.y = tempPosition.y;
-		onGround = false;
+		if (std::abs(velocity.y) >= 1) {
+			onGround = false;
+		}
 	}
 
 	// Update sprite

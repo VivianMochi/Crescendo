@@ -28,6 +28,7 @@ private:
 	sf::Sprite title;
 	BitmapText text;
 	BitmapText creditText;
+	BitmapText loading;
 	std::vector<Particle*> particles;
 	sf::Sprite elevator;
 
