@@ -4,11 +4,24 @@
 #include <sstream>
 #include <fstream>
 
-LevelState::LevelState(int level) : level(level) {
-
+LevelState::LevelState(int level, bool skipIntro) : level(level) {
+	if (skipIntro) {
+		gameState = 1;
+	}
+	else {
+		gameState = 0;
+	}
 }
 
 LevelState::~LevelState() {
+	for (Lever *lever : levers) {
+		delete lever;
+	}
+
+	for (BeatBlock *block : blocks) {
+		delete block;
+	}
+
 	for (sf::Music *mus : music) {
 		delete mus;
 	}
@@ -42,9 +55,11 @@ void LevelState::init() {
 	hud.setTextureRect(sf::IntRect(0, 0, 36, 91));
 	ambientBar.setTexture(loadTexture("img/hud.png"));
 	personalBar.setTexture(loadTexture("img/hud.png"));
+	alertOverlay.setTexture(loadTexture("img/alert.png"));
 
 	elevatorSound.setBuffer(loadSoundBuffer("snd/elevator.wav"));
 	doorSound.setBuffer(loadSoundBuffer("snd/door.wav"));
+	alertSound.setBuffer(loadSoundBuffer("snd/alert.wav"));
 
 	for (int i = 0; i < 3; i++) {
 		music.push_back(new sf::Music());
@@ -55,10 +70,33 @@ void LevelState::init() {
 		music[i]->setLoop(true);
 	}
 	music[0]->setVolume(100);
+
+	if (gameState == 1) {
+		for (sf::Music *mus : music) {
+			mus->play();
+		}
+		elevator.setTextureRect(sf::IntRect(40, 0, 40, 135));
+		// Todo: fix player making noise when intro is skipped
+	}
+
+	setupLevel();
 }
 
 void LevelState::gotEvent(sf::Event event) {
 	if (event.type == sf::Event::KeyPressed) {
+		if (event.key.code == sf::Keyboard::X && gameState == 1) {
+			for (Lever *lever : levers) {
+				if (!lever->isFlipped() && lever->isOverlapping(player.getCenterPosition())) {
+					lever->flip();
+					setSection(section + 1);
+				}
+			}
+		}
+		else if (event.key.code == sf::Keyboard::Escape) {
+			// Todo: pause menu
+		}
+
+		// Debug Keys
 		if (event.key.code == sf::Keyboard::Num1) {
 			setSection(1);
 		}
@@ -80,12 +118,13 @@ void LevelState::gotEvent(sf::Event event) {
 }
 
 void LevelState::update(sf::Time elapsed) {
-	if (pregameTimer > 0) {
-		pregameTimer -= elapsed.asSeconds();
-		if (pregameTimer <= 1.5 && elevatorSound.getStatus() == sf::Sound::Stopped) {
+	if (gameState == 0) {
+		gameTimer -= elapsed.asSeconds();
+		if (gameTimer <= 1.5 && elevatorSound.getStatus() == sf::Sound::Stopped) {
 			elevatorSound.play();
 		}
-		if (pregameTimer <= 0) {
+		if (gameTimer <= 0) {
+			gameState = 1;
 			for (sf::Music *mus : music) {
 				mus->play();
 			}
@@ -93,7 +132,7 @@ void LevelState::update(sf::Time elapsed) {
 			doorSound.play();
 		}
 	}
-	if (pregameTimer <= 0) {
+	if (gameState == 1) {
 		// Tick variables
 		beatCounter += elapsed.asSeconds();
 		if (beatCounter >= 60.f / bpm) {
@@ -103,29 +142,29 @@ void LevelState::update(sf::Time elapsed) {
 		volume *= std::pow(.5, elapsed.asSeconds());
 
 		// Calculate music volume
-		if (level == 1) {
-			if (beatCounter < .15) {
-				int localBeat = beat % 16;
-				if (section >= 1) {
-					if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 9) {
-						setVolume(1.8);
-					}
-				}
-				if (section >= 2) {
-					if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 11 || beat % 32 == 25) {
-						setVolume(2.5);
-					}
-				}
-				if (section == 3) {
-					if (localBeat % 2 == 0 && localBeat < 8) {
-						setVolume(3.4);
-					}
-				}
-			}
-		}
+		calculateVolume();
 
 		// Update player
 		player.update(elapsed);
+
+		// Calculate alert
+		if (player.getVolume() <= volume && alert > 0) {
+			alert -= elapsed.asSeconds();
+			if (alert < 0) {
+				alert = 0;
+			}
+		}
+		else if (player.getVolume() > volume) {
+			alert += elapsed.asSeconds();
+		}
+		if (alert >= .1) {
+			gameState = 2;
+			gameTimer = 1.5;
+			for (sf::Music *mus : music) {
+				mus->stop();
+			}
+			alertSound.play();
+		}
 
 		// Update hud
 		if (volume > 0) {
@@ -147,12 +186,18 @@ void LevelState::update(sf::Time elapsed) {
 			personalBar.setTextureRect(sf::IntRect(47, 69 - height, 11, height));
 		}
 	}
+	if (gameState == 2) {
+		gameTimer -= elapsed.asSeconds();
+		if (gameTimer <= 0) {
+			game->changeState(new LevelState(level, 1));
+		}
+	}
 }
 
 void LevelState::render(sf::RenderWindow &window) {
 	window.draw(elevator);
-	if (pregameTimer > 0) {
-		if (pregameTimer < 1.5) {
+	if (gameState == 0) {
+		if (gameTimer < 1.5) {
 			window.draw(floorDisplay);
 		}
 	}
@@ -162,6 +207,14 @@ void LevelState::render(sf::RenderWindow &window) {
 		}
 		window.draw(levelSprite);
 
+		for (Lever *lever : levers) {
+			window.draw(*lever);
+		}
+
+		for (BeatBlock *block : blocks) {
+			window.draw(*block);
+		}
+
 		window.draw(player);
 
 		window.draw(hud);
@@ -170,6 +223,10 @@ void LevelState::render(sf::RenderWindow &window) {
 		}
 		if (player.getVolume()) {
 			window.draw(personalBar);
+		}
+
+		if (gameState == 2) {
+			window.draw(alertOverlay);
 		}
 	}
 }
@@ -219,6 +276,35 @@ bool LevelState::isMetal(sf::Vector2f position) {
 	}
 	else {
 		return levelMask.getPixel(position.x - 40, position.y).g == 255;
+	}
+}
+
+void LevelState::setupLevel() {
+	if (level == 1) {
+		levers.push_back(new Lever(this, sf::Vector2f(90, 117)));
+	}
+}
+
+void LevelState::calculateVolume() {
+	if (level == 1) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 16;
+			if (section >= 1) {
+				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 9) {
+					setVolume(1.8);
+				}
+			}
+			if (section >= 2) {
+				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 11 || beat % 32 == 25) {
+					setVolume(2.5);
+				}
+			}
+			if (section == 3) {
+				if (localBeat % 2 == 0 && localBeat < 8) {
+					setVolume(3.4);
+				}
+			}
+		}
 	}
 }
 

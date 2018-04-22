@@ -71,12 +71,12 @@ void Infiltrator::update(sf::Time elapsed) {
 			}
 		}
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z) && onGround) {
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) && onGround) {
 		velocity.y -= JUMP;
 		jumpSound.play();
 		setVolume(2);
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::X) && dashCooldown <= 0) {
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && dashCooldown <= 0) {
 		dash = true;
 		dashSound.play();
 		setVolume(3);
@@ -86,7 +86,7 @@ void Infiltrator::update(sf::Time elapsed) {
 	sf::Vector2f tempPosition = position;
 	tempPosition.x += velocity.x * seconds;
 	if (dash) {
-		dashCooldown += 1.5;
+		dashCooldown += .4;
 		tempPosition.x += facingRight ? DASH : -DASH;
 		velocity.x += facingRight ? SPEED : -SPEED;
 	}
@@ -193,6 +193,10 @@ void Infiltrator::update(sf::Time elapsed) {
 
 	sprite.setTextureRect(sf::IntRect(14 * frame, 0, 14, 14));
 	sprite.setPosition(position + sf::Vector2f(facingRight ? -5 : 9, -2));
+}
+
+sf::Vector2f Infiltrator::getCenterPosition() {
+	return position + sf::Vector2f(2, 6);
 }
 
 float Infiltrator::getVolume() const {

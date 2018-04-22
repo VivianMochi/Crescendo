@@ -17,6 +17,7 @@ public:
 	void init();
 	void update(sf::Time elapsed);
 
+	sf::Vector2f getCenterPosition();
 	float getVolume() const;
 
 private:
@@ -25,7 +26,6 @@ private:
 	void setVolume(float volume);
 
 	State *state = nullptr;
-	sf::Sprite sprite;
 
 	sf::Vector2f position;
 	sf::Vector2f velocity;
@@ -38,6 +38,8 @@ private:
 
 	float volume = 0;
 	float volumeFreeze = 0;
+
+	sf::Sprite sprite;
 
 	sf::Sound softStepSound;
 	sf::Sound loudStepSound;
