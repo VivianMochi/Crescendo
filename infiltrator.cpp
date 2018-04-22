@@ -24,7 +24,7 @@ void Infiltrator::update(sf::Time elapsed) {
 	float seconds = elapsed.asSeconds();
 
 	// Tick variables
-	volume *= std::pow(.2, seconds);
+	volume *= std::pow(.1, seconds);
 
 	velocity.y += GRAVITY * seconds;
 
@@ -78,7 +78,6 @@ void Infiltrator::update(sf::Time elapsed) {
 	}
 
 	// Do movement
-	onGround = false;
 	sf::Vector2f tempPosition = position;
 	tempPosition.x += velocity.x * seconds;
 	if (dash) {
@@ -96,12 +95,21 @@ void Infiltrator::update(sf::Time elapsed) {
 	tempPosition.y += velocity.y * seconds;
 	if (((LevelState*)state)->checkCollision(tempPosition, 4, 12)) {
 		tempPosition = position;
-		if (velocity.y > 0) {
+		if (velocity.y > 0 && !onGround) {
 			onGround = true;
+			if (((LevelState*)state)->isMetal(position + sf::Vector2f(2, 13))) {
+				loudStepSound.play();
+				setVolume(2);
+			}
+			else {
+				softStepSound.play();
+				setVolume(1);
+			}
 		}
 		velocity.y = 0;
 	}
 	else {
+		onGround = false;
 		position = tempPosition;
 	}
 

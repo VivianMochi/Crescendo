@@ -9,7 +9,9 @@ LevelState::LevelState(int level) : level(level) {
 }
 
 LevelState::~LevelState() {
-
+	for (sf::Music *mus : music) {
+		delete mus;
+	}
 }
 
 void LevelState::init() {
@@ -43,19 +45,67 @@ void LevelState::init() {
 
 	personalBar.setTexture(loadTexture("img/hud.png"));
 
-	ss << "mus/level" << level << ".ogg";
-	music.openFromFile(ss.str());
-	music.setLoop(true);
-	music.play();
+	for (int i = 0; i < 3; i++) {
+		music.push_back(new sf::Music());
+		ss << "mus/level" << level << "-" << i + 1 << ".ogg";
+		music[i]->openFromFile(ss.str());
+		ss.str("");
+		music[i]->setVolume(0);
+		music[i]->setLoop(true);
+		music[i]->play();
+	}
+	music[0]->setVolume(100);
 }
 
 void LevelState::gotEvent(sf::Event event) {
-
+	if (event.type == sf::Event::KeyPressed) {
+		if (event.key.code == sf::Keyboard::Num1) {
+			setSection(1);
+		}
+		else if (event.key.code == sf::Keyboard::Num2) {
+			setSection(2);
+		}
+		else if (event.key.code == sf::Keyboard::Num3) {
+			setSection(3);
+		}
+	}
 }
 
 void LevelState::update(sf::Time elapsed) {
+	// Tick variables
+	beatCounter += elapsed.asSeconds();
+	if (beatCounter >= 60.f / bpm) {
+		beatCounter -= 60.f / bpm;
+		beat++;
+	}
+	volume *= std::pow(.5, elapsed.asSeconds());
+
+	// Calculate music volume
+	if (level == 1) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 16;
+			if (section >= 1) {
+				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 9) {
+					setVolume(1.8);
+				}
+			}
+			if (section >= 2) {
+				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 11 || beat % 32 == 25) {
+					setVolume(2.5);
+				}
+			}
+			if (section == 3) {
+				if (localBeat % 2 == 0 && localBeat < 8) {
+					setVolume(3.4);
+				}
+			}
+		}
+	}
+
+	// Update player
 	player.update(elapsed);
 
+	// Update hud
 	if (volume > 0) {
 		float tempVolume = volume;
 		if (tempVolume > 4) {
@@ -78,7 +128,9 @@ void LevelState::update(sf::Time elapsed) {
 
 void LevelState::render(sf::RenderWindow &window) {
 	window.draw(elevator);
-	window.draw(floorDisplay);
+	if (beat % 4 <= 2) {
+		window.draw(floorDisplay);
+	}
 	window.draw(levelSprite);
 
 	window.draw(player);
@@ -138,5 +190,17 @@ bool LevelState::isMetal(sf::Vector2f position) {
 	else {
 		return levelMask.getPixel(position.x - 40, position.y).g == 255;
 	}
+}
+
+void LevelState::setVolume(float volume) {
+	if (volume > this->volume) {
+		this->volume = volume;
+	}
+}
+
+void LevelState::setSection(int section) {
+	music[this->section - 1]->setVolume(0);
+	music[section - 1]->setVolume(100);
+	this->section = section;
 }
 

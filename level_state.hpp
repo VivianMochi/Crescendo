@@ -5,6 +5,7 @@
 #include "infiltrator.hpp"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <vector>
 
 class LevelState : public State {
 public:
@@ -20,8 +21,16 @@ public:
 	bool isMetal(sf::Vector2f position);
 
 private:
+	void setVolume(float volume);
+	void setSection(int section);
+
 	int level = 0;
-	float volume = 1;
+	int section = 1;
+	float volume = 0;
+
+	int bpm = 130;
+	float beatCounter = 0;
+	int beat = 0;
 
 	sf::Sprite elevator;
 	BitmapText floorDisplay;
@@ -33,6 +42,6 @@ private:
 	sf::Sprite ambientBar;
 	sf::Sprite personalBar;
 
-	sf::Music music;
+	std::vector<sf::Music*> music;
 };
 
