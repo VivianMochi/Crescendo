@@ -10,7 +10,7 @@ class Infiltrator : public sf::Drawable {
 	static const int SPEED = 80;
 	static const int ACCELERATION = 300;
 	static const int JUMP = 150;
-	static const int DASH = 25;
+	static const int DASH = 30;
 
 public:
 	void setState(State *state);

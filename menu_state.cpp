@@ -47,7 +47,7 @@ void MenuState::update(sf::Time elapsed) {
 	backgroundOffset += elapsed.asSeconds() * (1 - beatCounter) * 25;
 	background.setTextureRect(sf::IntRect(0, backgroundOffset, 240, 135));
 
-	createParticle(sf::Vector2f(54 + std::rand() % 131, 10 + std::rand() % 20), sf::Vector2f(std::rand() % 5 - 2, 8 + std::rand() % 4), 2.6 + std::rand() % 10 * .1);
+	createParticle(sf::Vector2f(54 + std::rand() % 131, 10 + std::rand() % 20), sf::Vector2f(std::rand() % 5 - 2, 8 + std::rand() % 4), 1.6 + std::rand() % 10 * .1);
 
 	for (int i = particles.size() - 1; i >= 0; i--) {
 		particles[i]->life -= elapsed.asSeconds();

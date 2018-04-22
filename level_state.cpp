@@ -160,7 +160,7 @@ void LevelState::update(sf::Time elapsed) {
 		// Update player
 		player.update(elapsed);
 
-		if (player.carryingOrb && player.getCenterPosition().x <= 21) {
+		if (player.carryingOrb && player.getCenterPosition().x <= 23) {
 			gameState = 3;
 			gameTimer = 2.5;
 			staticMusic.stop();
