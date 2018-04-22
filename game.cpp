@@ -132,7 +132,7 @@ sf::Texture& Game::loadTexture(std::string filename) {
 		if (newTexture.loadFromFile(filename)) {
 			textures.insert(std::pair<std::string, sf::Texture>(filename, newTexture));
 			// Debug
-			std::cout << "New texture created (" << filename << ")\n";
+			//std::cout << "New texture created (" << filename << ")\n";
 		}
 		else {
 			if (textures.count("BadTexture") == 0) {
@@ -145,18 +145,18 @@ sf::Texture& Game::loadTexture(std::string filename) {
 				textures.insert(std::pair<std::string, sf::Texture>("BadTexture", newTexture));
 
 				// Debug
-				std::cout << "Bad texture created (" << filename << ")\n";
+				//std::cout << "Bad texture created (" << filename << ")\n";
 			}
 			else {
 				// Debug
-				std::cout << "Bad texture loaded (" << filename << ")\n";
+				//std::cout << "Bad texture loaded (" << filename << ")\n";
 			}
 			return textures["BadTexture"];
 		}
 	}
 	else {
 		// Debug
-		std::cout << "Existing texture loaded (" << filename << ")\n";
+		//std::cout << "Existing texture loaded (" << filename << ")\n";
 	}
 	return textures[filename];
 }
@@ -167,16 +167,16 @@ sf::SoundBuffer& Game::loadSoundBuffer(std::string filename) {
 		if (newSoundBuffer.loadFromFile(filename)) {
 			soundBuffers.insert(std::pair<std::string, sf::SoundBuffer>(filename, newSoundBuffer));
 			// Debug
-			std::cout << "New sound buffer created (" << filename << ")\n";
+			//std::cout << "New sound buffer created (" << filename << ")\n";
 		}
 		else {
 			// Debug
-			std::cout << "Cannot create sound buffer (" << filename << ")\n";
+			//std::cout << "Cannot create sound buffer (" << filename << ")\n";
 		}
 	}
 	else {
 		// Debug
-		std::cout << "Existing sound buffer loaded (" << filename << ")\n";
+		//std::cout << "Existing sound buffer loaded (" << filename << ")\n";
 	}
 	return soundBuffers[filename];
 }
