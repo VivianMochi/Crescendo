@@ -78,7 +78,7 @@ Game::Game() {
 			state->update(elapsed);
 
 		// Render
-		window->clear(sf::Color(80, 80, 80));
+		window->clear();
 		if (state) {
 			state->render(*window);
 		}

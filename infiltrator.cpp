@@ -9,7 +9,7 @@ void Infiltrator::setState(State *state) {
 
 void Infiltrator::init() {
 	position.x = 19;
-	position.y = 112.9;
+	position.y = 112.999;
 
 	sprite.setTexture(state->loadTexture("img/infiltrator.png"));
 	sprite.setTextureRect(sf::IntRect(0, 0, 14, 14));
@@ -24,7 +24,12 @@ void Infiltrator::update(sf::Time elapsed) {
 	float seconds = elapsed.asSeconds();
 
 	// Tick variables
-	volume *= std::pow(.1, seconds);
+	if (volumeFreeze > 0) {
+		volumeFreeze -= seconds;
+	}
+	else {
+		volume *= std::pow(.1, seconds);
+	}
 
 	velocity.y += GRAVITY * seconds;
 
@@ -86,17 +91,51 @@ void Infiltrator::update(sf::Time elapsed) {
 		velocity.x += facingRight ? SPEED : -SPEED;
 	}
 	if (((LevelState*)state)->checkCollision(tempPosition, 4, 12)) {
-		tempPosition = position;
+		do {
+			if (velocity.x > 0) {
+				tempPosition.x -= 1;
+				if (tempPosition.x < position.x) {
+					tempPosition.x = position.x;
+					break;
+				}
+			}
+			else {
+				tempPosition.x += 1;
+				if (tempPosition.x > position.x) {
+					tempPosition.x = position.x;
+					break;
+				}
+			}
+		} while (((LevelState*)state)->checkCollision(tempPosition, 4, 12));
+		position.x = tempPosition.x;
 		velocity.x = 0;
 	}
 	else {
-		position = tempPosition;
+		position.x = tempPosition.x;
 	}
 	tempPosition.y += velocity.y * seconds;
 	if (((LevelState*)state)->checkCollision(tempPosition, 4, 12)) {
-		tempPosition = position;
+		do {
+			if (velocity.y > 0) {
+				tempPosition.y -= 1;
+				if (tempPosition.y < position.y) {
+					tempPosition.y = position.y;
+					break;
+				}
+			}
+			else {
+				tempPosition.y += 1;
+				if (tempPosition.y > position.y) {
+					tempPosition.y = position.y;
+					break;
+				}
+			}
+		} while (((LevelState*)state)->checkCollision(tempPosition, 4, 12));
+		position.y = tempPosition.y;
+
 		if (velocity.y > 0 && !onGround) {
 			onGround = true;
+			position.y = std::ceil(position.y) - .001;
 			if (((LevelState*)state)->isMetal(position + sf::Vector2f(2, 13))) {
 				loudStepSound.play();
 				setVolume(2);
@@ -109,8 +148,8 @@ void Infiltrator::update(sf::Time elapsed) {
 		velocity.y = 0;
 	}
 	else {
+		position.y = tempPosition.y;
 		onGround = false;
-		position = tempPosition;
 	}
 
 	// Update sprite
@@ -167,5 +206,6 @@ void Infiltrator::draw(sf::RenderTarget &target, sf::RenderStates states) const 
 void Infiltrator::setVolume(float volume) {
 	if (volume > this->volume) {
 		this->volume = volume;
+		volumeFreeze = .15;
 	}
 }

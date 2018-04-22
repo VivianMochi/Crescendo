@@ -33,8 +33,8 @@ void MenuState::gotEvent(sf::Event event) {
 
 void MenuState::update(sf::Time elapsed) {
 	beatCounter += elapsed.asSeconds();
-	if (beatCounter >= 0.9230769f) {
-		beatCounter -= 0.9230769f;
+	if (beatCounter >= 120.f / 130.f) {
+		beatCounter -= 120.f / 130.f;
 	}
 }
 

@@ -16,7 +16,7 @@ LevelState::~LevelState() {
 
 void LevelState::init() {
 	elevator.setTexture(loadTexture("img/elevator.png"));
-	elevator.setTextureRect(sf::IntRect(40, 0, 40, 135));
+	elevator.setTextureRect(sf::IntRect(0, 0, 40, 135));
 
 	floorDisplay.setTexture(loadTexture("img/font.png"));
 	floorDisplay.setPosition(13, 98);
@@ -40,10 +40,11 @@ void LevelState::init() {
 
 	hud.setTexture(loadTexture("img/hud.png"));
 	hud.setTextureRect(sf::IntRect(0, 0, 36, 91));
-
 	ambientBar.setTexture(loadTexture("img/hud.png"));
-
 	personalBar.setTexture(loadTexture("img/hud.png"));
+
+	elevatorSound.setBuffer(loadSoundBuffer("snd/elevator.wav"));
+	doorSound.setBuffer(loadSoundBuffer("snd/door.wav"));
 
 	for (int i = 0; i < 3; i++) {
 		music.push_back(new sf::Music());
@@ -52,7 +53,6 @@ void LevelState::init() {
 		ss.str("");
 		music[i]->setVolume(0);
 		music[i]->setLoop(true);
-		music[i]->play();
 	}
 	music[0]->setVolume(100);
 }
@@ -68,79 +68,109 @@ void LevelState::gotEvent(sf::Event event) {
 		else if (event.key.code == sf::Keyboard::Num3) {
 			setSection(3);
 		}
+		else if (event.key.code == sf::Keyboard::Num9) {
+			if (level > 1) {
+				game->changeState(new LevelState(level - 1));
+			}
+		}
+		else if (event.key.code == sf::Keyboard::Num0) {
+			game->changeState(new LevelState(level + 1));
+		}
 	}
 }
 
 void LevelState::update(sf::Time elapsed) {
-	// Tick variables
-	beatCounter += elapsed.asSeconds();
-	if (beatCounter >= 60.f / bpm) {
-		beatCounter -= 60.f / bpm;
-		beat++;
+	if (pregameTimer > 0) {
+		pregameTimer -= elapsed.asSeconds();
+		if (pregameTimer <= 1.5 && elevatorSound.getStatus() == sf::Sound::Stopped) {
+			elevatorSound.play();
+		}
+		if (pregameTimer <= 0) {
+			for (sf::Music *mus : music) {
+				mus->play();
+			}
+			elevator.setTextureRect(sf::IntRect(40, 0, 40, 135));
+			doorSound.play();
+		}
 	}
-	volume *= std::pow(.5, elapsed.asSeconds());
+	if (pregameTimer <= 0) {
+		// Tick variables
+		beatCounter += elapsed.asSeconds();
+		if (beatCounter >= 60.f / bpm) {
+			beatCounter -= 60.f / bpm;
+			beat++;
+		}
+		volume *= std::pow(.5, elapsed.asSeconds());
 
-	// Calculate music volume
-	if (level == 1) {
-		if (beatCounter < .15) {
-			int localBeat = beat % 16;
-			if (section >= 1) {
-				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 9) {
-					setVolume(1.8);
+		// Calculate music volume
+		if (level == 1) {
+			if (beatCounter < .15) {
+				int localBeat = beat % 16;
+				if (section >= 1) {
+					if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 9) {
+						setVolume(1.8);
+					}
 				}
-			}
-			if (section >= 2) {
-				if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 11 || beat % 32 == 25) {
-					setVolume(2.5);
+				if (section >= 2) {
+					if ((localBeat % 2 == 0 && localBeat != 14) || localBeat == 11 || beat % 32 == 25) {
+						setVolume(2.5);
+					}
 				}
-			}
-			if (section == 3) {
-				if (localBeat % 2 == 0 && localBeat < 8) {
-					setVolume(3.4);
+				if (section == 3) {
+					if (localBeat % 2 == 0 && localBeat < 8) {
+						setVolume(3.4);
+					}
 				}
 			}
 		}
-	}
 
-	// Update player
-	player.update(elapsed);
+		// Update player
+		player.update(elapsed);
 
-	// Update hud
-	if (volume > 0) {
-		float tempVolume = volume;
-		if (tempVolume > 4) {
-			tempVolume = 4;
+		// Update hud
+		if (volume > 0) {
+			float tempVolume = volume;
+			if (tempVolume > 4) {
+				tempVolume = 4;
+			}
+			int height = 69 * tempVolume / 4;
+			ambientBar.setPosition(8, 18 + (69 - height));
+			ambientBar.setTextureRect(sf::IntRect(36, 69 - height, 11, height));
 		}
-		int height = 69 * tempVolume / 4;
-		ambientBar.setPosition(8, 18 + (69 - height));
-		ambientBar.setTextureRect(sf::IntRect(36, 69 - height, 11, height));
-	}
-	if (player.getVolume() > 0) {
-		float tempVolume = player.getVolume();
-		if (tempVolume > 4) {
-			tempVolume = 4;
+		if (player.getVolume() > 0) {
+			float tempVolume = player.getVolume();
+			if (tempVolume > 4) {
+				tempVolume = 4;
+			}
+			int height = 69 * tempVolume / 4;
+			personalBar.setPosition(21, 18 + (69 - height));
+			personalBar.setTextureRect(sf::IntRect(47, 69 - height, 11, height));
 		}
-		int height = 69 * tempVolume / 4;
-		personalBar.setPosition(21, 18 + (69 - height));
-		personalBar.setTextureRect(sf::IntRect(47, 69 - height, 11, height));
 	}
 }
 
 void LevelState::render(sf::RenderWindow &window) {
 	window.draw(elevator);
-	if (beat % 4 <= 2) {
-		window.draw(floorDisplay);
+	if (pregameTimer > 0) {
+		if (pregameTimer < 1.5) {
+			window.draw(floorDisplay);
+		}
 	}
-	window.draw(levelSprite);
+	else {
+		if (beat % 4 <= 2) {
+			window.draw(floorDisplay);
+		}
+		window.draw(levelSprite);
 
-	window.draw(player);
+		window.draw(player);
 
-	window.draw(hud);
-	if (volume > 0) {
-		window.draw(ambientBar);
-	}
-	if (player.getVolume()) {
-		window.draw(personalBar);
+		window.draw(hud);
+		if (volume > 0) {
+			window.draw(ambientBar);
+		}
+		if (player.getVolume()) {
+			window.draw(personalBar);
+		}
 	}
 }
 

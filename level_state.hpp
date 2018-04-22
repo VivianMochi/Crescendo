@@ -28,6 +28,7 @@ private:
 	int section = 1;
 	float volume = 0;
 
+	float pregameTimer = 2;
 	int bpm = 130;
 	float beatCounter = 0;
 	int beat = 0;
@@ -42,6 +43,8 @@ private:
 	sf::Sprite ambientBar;
 	sf::Sprite personalBar;
 
+	sf::Sound elevatorSound;
+	sf::Sound doorSound;
 	std::vector<sf::Music*> music;
 };
 
