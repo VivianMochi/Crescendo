@@ -27,10 +27,14 @@ private:
 	sf::Sprite background;
 	sf::Sprite title;
 	BitmapText text;
+	BitmapText creditText;
 	std::vector<Particle*> particles;
+	sf::Sprite elevator;
 
+	sf::Sound startSound;
 	sf::Music music;
 
+	int menuState = 0;
 	float beatCounter = 0;
 	float backgroundOffset = 0;
 };

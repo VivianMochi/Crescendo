@@ -14,8 +14,8 @@ void Infiltrator::init() {
 	sprite.setTexture(state->loadTexture("img/infiltrator.png"));
 	sprite.setTextureRect(sf::IntRect(0, 0, 14, 14));
 
-	softStepSound.setBuffer(state->loadSoundBuffer("snd/softStep.wav"));
-	loudStepSound.setBuffer(state->loadSoundBuffer("snd/loudStep.wav"));
+	softStepSound.setBuffer(state->loadSoundBuffer("snd/soft_step.wav"));
+	loudStepSound.setBuffer(state->loadSoundBuffer("snd/loud_step.wav"));
 	jumpSound.setBuffer(state->loadSoundBuffer("snd/jump.wav"));
 	dashSound.setBuffer(state->loadSoundBuffer("snd/dash.wav"));
 }
