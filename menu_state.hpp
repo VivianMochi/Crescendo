@@ -32,4 +32,5 @@ private:
 	sf::Music music;
 
 	float beatCounter = 0;
+	float backgroundOffset = 0;
 };

@@ -3,6 +3,7 @@
 #include "state.hpp"
 #include "bitmap_text.hpp"
 #include "infiltrator.hpp"
+#include "orb.hpp"
 #include "lever.hpp"
 #include "beat_block.hpp"
 #include <SFML/Graphics.hpp>
@@ -45,6 +46,7 @@ private:
 	sf::Sprite levelSprite;
 	sf::Image levelMask;
 	Infiltrator player;
+	Orb orb;
 	std::vector<Lever*> levers;
 	std::vector<BeatBlock*> blocks;
 
@@ -56,6 +58,8 @@ private:
 	sf::Sound elevatorSound;
 	sf::Sound doorSound;
 	sf::Sound alertSound;
+	sf::Sound completeSound;
 	std::vector<sf::Music*> music;
+	sf::Music staticMusic;
 };
 

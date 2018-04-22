@@ -42,7 +42,6 @@ void LevelState::init() {
 	ss << "level/level" << level << ".png";
 	levelSprite.setTexture(loadTexture(ss.str()));
 	ss.str("");
-	levelSprite.setPosition(40, 0);
 
 	ss << "level/level" << level << "m.png";
 	levelMask.loadFromFile(ss.str());
@@ -60,6 +59,7 @@ void LevelState::init() {
 	elevatorSound.setBuffer(loadSoundBuffer("snd/elevator.wav"));
 	doorSound.setBuffer(loadSoundBuffer("snd/door.wav"));
 	alertSound.setBuffer(loadSoundBuffer("snd/alert.wav"));
+	completeSound.setBuffer(loadSoundBuffer("snd/complete.wav"));
 
 	for (int i = 0; i < 3; i++) {
 		music.push_back(new sf::Music());
@@ -70,6 +70,10 @@ void LevelState::init() {
 		music[i]->setLoop(true);
 	}
 	music[0]->setVolume(100);
+
+	staticMusic.openFromFile("mus/static.ogg");
+	staticMusic.setLoop(true);
+	staticMusic.setVolume(40);
 
 	if (gameState == 1) {
 		for (sf::Music *mus : music) {
@@ -85,6 +89,14 @@ void LevelState::init() {
 void LevelState::gotEvent(sf::Event event) {
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::X && gameState == 1) {
+			if (!orb.isCollected() && orb.isOverlapping(player.getCenterPosition())) {
+				orb.collect();
+				player.carryingOrb = true;
+				for (sf::Music *mus : music) {
+					mus->stop();
+				}
+				staticMusic.play();
+			}
 			for (Lever *lever : levers) {
 				if (!lever->isFlipped() && lever->isOverlapping(player.getCenterPosition())) {
 					lever->flip();
@@ -138,6 +150,7 @@ void LevelState::update(sf::Time elapsed) {
 		if (beatCounter >= 60.f / bpm) {
 			beatCounter -= 60.f / bpm;
 			beat++;
+			orb.setBeat(beat);
 		}
 		volume *= std::pow(.5, elapsed.asSeconds());
 
@@ -146,6 +159,14 @@ void LevelState::update(sf::Time elapsed) {
 
 		// Update player
 		player.update(elapsed);
+
+		if (player.carryingOrb && player.getCenterPosition().x <= 21) {
+			gameState = 3;
+			gameTimer = 2.5;
+			staticMusic.stop();
+			elevator.setTextureRect(sf::IntRect(0, 0, 40, 135));
+			completeSound.play();
+		}
 
 		// Calculate alert
 		if (player.getVolume() <= volume && alert > 0) {
@@ -159,10 +180,11 @@ void LevelState::update(sf::Time elapsed) {
 		}
 		if (alert >= .1) {
 			gameState = 2;
-			gameTimer = 1.5;
+			gameTimer = 1.2;
 			for (sf::Music *mus : music) {
 				mus->stop();
 			}
+			staticMusic.stop();
 			alertSound.play();
 		}
 
@@ -192,6 +214,12 @@ void LevelState::update(sf::Time elapsed) {
 			game->changeState(new LevelState(level, 1));
 		}
 	}
+	if (gameState == 3) {
+		gameTimer -= elapsed.asSeconds();
+		if (gameTimer <= 0) {
+			game->changeState(new LevelState(level + 1));
+		}
+	}
 }
 
 void LevelState::render(sf::RenderWindow &window) {
@@ -201,7 +229,7 @@ void LevelState::render(sf::RenderWindow &window) {
 			window.draw(floorDisplay);
 		}
 	}
-	else {
+	else if (gameState <= 2) {
 		if (beat % 4 <= 2) {
 			window.draw(floorDisplay);
 		}
@@ -215,6 +243,8 @@ void LevelState::render(sf::RenderWindow &window) {
 			window.draw(*block);
 		}
 
+		window.draw(orb);
+
 		window.draw(player);
 
 		window.draw(hud);
@@ -227,6 +257,11 @@ void LevelState::render(sf::RenderWindow &window) {
 
 		if (gameState == 2) {
 			window.draw(alertOverlay);
+		}
+	}
+	else if (gameState == 3) {
+		if (gameTimer > 0.5) {
+			window.draw(floorDisplay);
 		}
 	}
 }
@@ -248,22 +283,22 @@ bool LevelState::checkCollision(sf::Vector2f position, int width, int height) {
 		return true;
 	}
 	else if (position.x > 40 && position.x + width < 240 && position.y > 0 && position.y + height < 135) {
-		if (levelMask.getPixel(position.x - 40, position.y).b == 255) {
+		if (levelMask.getPixel(position.x, position.y).b == 255) {
 			return true;
 		}
-		else if (levelMask.getPixel(position.x - 40 + width, position.y).b == 255) {
+		else if (levelMask.getPixel(position.x + width, position.y).b == 255) {
 			return true;
 		}
-		else if (levelMask.getPixel(position.x - 40, position.y + height / 2).b == 255) {
+		else if (levelMask.getPixel(position.x, position.y + height / 2).b == 255) {
 			return true;
 		}
-		else if (levelMask.getPixel(position.x - 40 + width, position.y + height / 2).b == 255) {
+		else if (levelMask.getPixel(position.x + width, position.y + height / 2).b == 255) {
 			return true;
 		}
-		else if (levelMask.getPixel(position.x - 40, position.y + height).b == 255) {
+		else if (levelMask.getPixel(position.x, position.y + height).b == 255) {
 			return true;
 		}
-		else if (levelMask.getPixel(position.x - 40 + width, position.y + height).b == 255) {
+		else if (levelMask.getPixel(position.x + width, position.y + height).b == 255) {
 			return true;
 		}
 	}
@@ -275,13 +310,15 @@ bool LevelState::isMetal(sf::Vector2f position) {
 		return false;
 	}
 	else {
-		return levelMask.getPixel(position.x - 40, position.y).g == 255;
+		return levelMask.getPixel(position.x, position.y).g == 255;
 	}
 }
 
 void LevelState::setupLevel() {
 	if (level == 1) {
-		levers.push_back(new Lever(this, sf::Vector2f(90, 117)));
+		levers.push_back(new Lever(this, sf::Vector2f(87, 125)));
+		levers.push_back(new Lever(this, sf::Vector2f(160, 47), true));
+		orb = Orb(this, sf::Vector2f(44, 47));
 	}
 }
 

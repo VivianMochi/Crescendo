@@ -14,7 +14,9 @@ MenuState::~MenuState() {
 }
 
 void MenuState::init() {
-	background.setTexture(loadTexture("img/menu.png"));
+	sf::Texture &bg = loadTexture("img/menu.png");
+	bg.setRepeated(true);
+	background.setTexture(bg);
 
 	title.setTexture(loadTexture("img/title.png"));
 	title.setTextureRect(sf::IntRect(0, 0, 180, 40));
@@ -41,6 +43,9 @@ void MenuState::update(sf::Time elapsed) {
 	if (beatCounter >= 120.f / 130.f) {
 		beatCounter -= 120.f / 130.f;
 	}
+
+	backgroundOffset += elapsed.asSeconds() * (1 - beatCounter) * 25;
+	background.setTextureRect(sf::IntRect(0, backgroundOffset, 240, 135));
 
 	createParticle(sf::Vector2f(54 + std::rand() % 131, 10 + std::rand() % 20), sf::Vector2f(std::rand() % 5 - 2, 8 + std::rand() % 4), 2.6 + std::rand() % 10 * .1);
 

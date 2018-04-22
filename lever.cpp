@@ -8,7 +8,7 @@ Lever::Lever(State *state, sf::Vector2f position, bool facingRight) : state(stat
 	if (facingRight) {
 		sprite.setScale(-1, 1);
 	}
-	sprite.setPosition(position + (facingRight ? sf::Vector2f(5, -5) : sf::Vector2f(-5, -5)));
+	sprite.setPosition(position + (facingRight ? sf::Vector2f(8, -13) : sf::Vector2f(-2, -13)));
 
 	flipSound.setBuffer(state->loadSoundBuffer("snd/door.wav"));
 }
@@ -28,7 +28,8 @@ bool Lever::isFlipped() {
 }
 
 bool Lever::isOverlapping(sf::Vector2f position) {
-	return std::abs(position.x - this->position.x) < 10 && std::abs(position.y - this->position.y) < 10;
+	sf::Vector2f center = this->position + sf::Vector2f(3, -5);
+	return std::abs(position.x - center.x) < 10 && std::abs(position.y - center.y) < 10;
 }
 
 void Lever::draw(sf::RenderTarget &target, sf::RenderStates states) const {

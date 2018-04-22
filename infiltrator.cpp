@@ -191,7 +191,7 @@ void Infiltrator::update(sf::Time elapsed) {
 		frame = 5;
 	}
 
-	sprite.setTextureRect(sf::IntRect(14 * frame, 0, 14, 14));
+	sprite.setTextureRect(sf::IntRect(14 * frame, carryingOrb ? 14 : 0, 14, 14));
 	sprite.setPosition(position + sf::Vector2f(facingRight ? -5 : 9, -2));
 }
 
