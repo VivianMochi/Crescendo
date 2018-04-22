@@ -319,6 +319,11 @@ void LevelState::setupLevel() {
 		levers.push_back(new Lever(this, sf::Vector2f(160, 47), true));
 		orb = Orb(this, sf::Vector2f(44, 47));
 	}
+	else if (level == 2) {
+		levers.push_back(new Lever(this, sf::Vector2f(165, 125)));
+		levers.push_back(new Lever(this, sf::Vector2f(46, 77), true));
+		orb = Orb(this, sf::Vector2f(218, 125));
+	}
 }
 
 void LevelState::calculateVolume() {
@@ -338,6 +343,26 @@ void LevelState::calculateVolume() {
 			if (section == 3) {
 				if (localBeat % 2 == 0 && localBeat < 8) {
 					setVolume(3.4);
+				}
+			}
+		}
+	}
+	else if (level == 2) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 16;
+			if (section >= 1) {
+				if (localBeat % 4 == 0 && localBeat != 12) {
+					setVolume(1.8);
+				}
+			}
+			if (section >= 2) {
+				if (localBeat % 2 == 0) {
+					setVolume(2.5);
+				}
+			}
+			if (section == 3) {
+				if (localBeat == 0) {
+					setVolume(3.7);
 				}
 			}
 		}
