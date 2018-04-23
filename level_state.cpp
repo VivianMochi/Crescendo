@@ -451,7 +451,9 @@ void LevelState::calculateVolume() {
 		}
 		if (section >= 2) {
 			int localBeat = beat % 16;
-			setVolume(1.1 + (16 - localBeat) * 1.3 / 16);
+			if (localBeat < 6) {
+				setVolume(2.3 + (5 - localBeat) * 0.1);
+			}
 		}
 	}
 	else if (level == 5) {
