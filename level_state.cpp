@@ -61,7 +61,7 @@ void LevelState::init() {
 	alertSound.setBuffer(loadSoundBuffer("snd/alert.wav"));
 	completeSound.setBuffer(loadSoundBuffer("snd/complete.wav"));
 
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < (level == 5 ? 1 : 3); i++) {
 		music.push_back(new sf::Music());
 		ss << "mus/level" << level << "-" << i + 1 << ".ogg";
 		music[i]->openFromFile(ss.str());
@@ -216,7 +216,12 @@ void LevelState::update(sf::Time elapsed) {
 	if (gameState == 3) {
 		gameTimer -= elapsed.asSeconds();
 		if (gameTimer <= 0) {
-			game->changeState(new LevelState(level + 1));
+			if (level == 5) {
+				game->exit();
+			}
+			else {
+				game->changeState(new LevelState(level + 1));
+			}
 		}
 	}
 }
@@ -324,6 +329,19 @@ void LevelState::setupLevel() {
 		levers.push_back(new Lever(this, sf::Vector2f(46, 77), true));
 		orb = Orb(this, sf::Vector2f(218, 125));
 	}
+	else if (level == 3) {
+		levers.push_back(new Lever(this, sf::Vector2f(42, 33), true));
+		levers.push_back(new Lever(this, sf::Vector2f(100, 125), true));
+		orb = Orb(this, sf::Vector2f(218, 93));
+	}
+	else if (level == 4) {
+		levers.push_back(new Lever(this, sf::Vector2f(188, 94)));
+		levers.push_back(new Lever(this, sf::Vector2f(188, 38)));
+		orb = Orb(this, sf::Vector2f(218, 38));
+	}
+	else if (level == 5) {
+		orb = Orb(this, sf::Vector2f(218, 125));
+	}
 }
 
 void LevelState::calculateVolume() {
@@ -357,7 +375,7 @@ void LevelState::calculateVolume() {
 			}
 			if (section >= 2) {
 				if (localBeat % 2 == 0) {
-					setVolume(2.5);
+					setVolume(2.4);
 				}
 			}
 			if (section == 3) {
@@ -365,6 +383,87 @@ void LevelState::calculateVolume() {
 					setVolume(3.7);
 				}
 			}
+		}
+	}
+	else if (level == 3) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 16;
+			if (section >= 1) {
+				setVolume(1.4);
+				if (localBeat % 4 == 0) {
+					setVolume(2.3);
+				}
+			}
+			if (section >= 2) {
+				if (beat % 32 < 20) {
+					if (localBeat % 4 == 0 || beat % 32 == 14 || beat % 32 == 18) {
+						setVolume(2.6);
+					}
+				}
+			}
+			if (section == 3) {
+				if (localBeat % 4 == 0) {
+					setVolume(3.4);
+				}
+			}
+		}
+		else if (beatCounter > 30.f / bpm && beatCounter < 30.f / bpm + .15) {
+			// Set offbeats
+			int localBeat = beat % 32;
+			if (section >= 2 && localBeat < 20) {
+				if (localBeat == 2 || localBeat == 7 || localBeat == 9 || localBeat == 10 || localBeat == 13 || localBeat == 15 || localBeat == 17 || localBeat == 19) {
+					setVolume(2.6);
+				}
+			}
+		}
+		else if (beatCounter > 15.f / bpm && beatCounter < 15.f / bpm + .15) {
+			// Set second fourths
+			int localBeat = beat % 32;
+			if (section >= 2 && localBeat < 20) {
+				if (localBeat == 3 || localBeat == 11) {
+					setVolume(2.6);
+				}
+			}
+		}
+		else if (beatCounter > 45.f / bpm && beatCounter < 45.f / bpm + .15) {
+			// Set fourth fourths
+			int localBeat = beat % 32;
+			if (section >= 2 && localBeat < 20) {
+				if (localBeat == 7 || localBeat == 12 || localBeat == 14 || localBeat == 17 || localBeat == 18) {
+					setVolume(2.6);
+				}
+			}
+		}
+	}
+	else if (level == 4) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 16;
+			if (section >= 1) {
+				if (localBeat % 2 == 0) {
+					setVolume(2.1);
+				}
+			}
+			if (section == 3) {
+				if (localBeat < 8) {
+					setVolume(3.2);
+				}
+			}
+		}
+		if (section >= 2) {
+			int localBeat = beat % 16;
+			setVolume(1.1 + (16 - localBeat) * 1.3 / 16);
+		}
+	}
+	else if (level == 5) {
+		if (beatCounter < .15) {
+			int localBeat = beat % 32;
+			setVolume(2.5);
+			if (localBeat % 4 == 0 || localBeat == 14 || localBeat == 15 || localBeat == 18 || localBeat == 19 || localBeat == 22 || localBeat == 26 || localBeat == 27) {
+				setVolume(3.8);
+			}
+		}
+		else if (beatCounter > 30.f / bpm && beatCounter < 30.f / bpm + .15) {
+			setVolume(2.5);
 		}
 	}
 }
