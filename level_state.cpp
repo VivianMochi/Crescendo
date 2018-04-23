@@ -108,7 +108,7 @@ void LevelState::gotEvent(sf::Event event) {
 		}
 
 		// Debug Keys
-		if (event.key.code == sf::Keyboard::Num1) {
+		/*if (event.key.code == sf::Keyboard::Num1) {
 			setSection(1);
 		}
 		else if (event.key.code == sf::Keyboard::Num2) {
@@ -124,7 +124,7 @@ void LevelState::gotEvent(sf::Event event) {
 		}
 		else if (event.key.code == sf::Keyboard::Num0) {
 			game->changeState(new LevelState(level + 1));
-		}
+		}*/
 	}
 }
 
