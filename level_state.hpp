@@ -54,6 +54,7 @@ private:
 	sf::Sprite ambientBar;
 	sf::Sprite personalBar;
 	sf::Sprite alertOverlay;
+	BitmapText pauseOverlay;
 
 	sf::Sound elevatorSound;
 	sf::Sound doorSound;

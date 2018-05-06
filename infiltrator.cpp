@@ -71,12 +71,18 @@ void Infiltrator::update(sf::Time elapsed) {
 			}
 		}
 	}
-	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) && onGround) {
+
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Z)) && !jumpPressed && onGround) {
 		velocity.y -= JUMP;
 		jumpSound.play();
 		setVolume(2);
+		jumpPressed = true;
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) && dashCooldown <= 0) {
+	else if (!(sf::Keyboard::isKeyPressed(sf::Keyboard::Space) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::Z))) {
+		jumpPressed = false;
+	}
+
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::RShift)) && dashCooldown <= 0) {
 		dash = true;
 		dashSound.play();
 		setVolume(3);

@@ -35,6 +35,7 @@ private:
 	bool facingRight = true;
 	int frame = 0;
 	float frameCounter = 0;
+	bool jumpPressed = false;
 	bool dash = false;
 	float dashCooldown = 0;
 

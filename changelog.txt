@@ -1,0 +1,20 @@
+Version 1.2 - Balancing and Pausing
+	New Features:
+		The game can now be paused using the escape key, and automatically pauses if the game window loses focus.
+
+	Changes:
+		Shortened the death screen significantly, and changed the sound that plays to hopefully be less annoying.
+		Increased the time you can be over the ambient volume before dying from .1 seconds to .15 seconds.
+		Reworked the end of level 4.
+		Increased the ambient volume of level 4 phase 1, to make it a little easier.
+		Changed the art for levels 2, 3, and 4 to add visual clarity.
+
+	Fixes:
+		Holding the jump key no longer makes the player continuously jump. The key must be released before another jump can be performed.
+		Either shift key can now be used to perform a dash.
+
+Version 1.1 - Small Fixes
+	Changed the sounds that play while carrying an orb to be much less jarring.
+	Tweaked level 4's music so it's more obvious when it's safe to jump.
+
+Version 1.0 - Initial Release

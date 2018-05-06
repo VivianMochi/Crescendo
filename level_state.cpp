@@ -56,6 +56,11 @@ void LevelState::init() {
 	personalBar.setTexture(loadTexture("img/hud.png"));
 	alertOverlay.setTexture(loadTexture("img/alert.png"));
 
+	pauseOverlay.setTexture(loadTexture("img/font.png"));
+	pauseOverlay.setPosition(78, 8);
+	pauseOverlay.setColor(sf::Color(127, 0, 0));
+	pauseOverlay.setText("PAUSED - ESC to Resume");
+
 	elevatorSound.setBuffer(loadSoundBuffer("snd/elevator.wav"));
 	doorSound.setBuffer(loadSoundBuffer("snd/door.wav"));
 	alertSound.setBuffer(loadSoundBuffer("snd/alert.wav"));
@@ -86,6 +91,16 @@ void LevelState::init() {
 }
 
 void LevelState::gotEvent(sf::Event event) {
+	if (event.type == sf::Event::LostFocus) {
+		if (gameState == 1) {
+			gameState = 4;
+			gameTimer = 0;
+			for (sf::Music *mus : music) {
+				mus->pause();
+			}
+			staticMusic.pause();
+		}
+	}
 	if (event.type == sf::Event::KeyPressed) {
 		if (event.key.code == sf::Keyboard::X && gameState == 1) {
 			if (!orb.isCollected() && orb.isOverlapping(player.getCenterPosition())) {
@@ -104,7 +119,25 @@ void LevelState::gotEvent(sf::Event event) {
 			}
 		}
 		else if (event.key.code == sf::Keyboard::Escape) {
-			// Todo: pause menu
+			if (gameState == 1) {
+				gameState = 4;
+				gameTimer = 0;
+				for (sf::Music *mus : music) {
+					mus->pause();
+				}
+				staticMusic.pause();
+			}
+			else if (gameState == 4) {
+				gameState = 1;
+				if (orb.isCollected()) {
+					staticMusic.play();
+				}
+				else {
+					for (sf::Music *mus : music) {
+						mus->play();
+					}
+				}
+			}
 		}
 
 		// Debug Keys
@@ -177,9 +210,9 @@ void LevelState::update(sf::Time elapsed) {
 		else if (player.getVolume() > volume) {
 			alert += elapsed.asSeconds();
 		}
-		if (alert >= .1) {
+		if (alert >= .15) {
 			gameState = 2;
-			gameTimer = 1.2;
+			gameTimer = .6;
 			for (sf::Music *mus : music) {
 				mus->stop();
 			}
@@ -224,6 +257,12 @@ void LevelState::update(sf::Time elapsed) {
 			}
 		}
 	}
+	if (gameState == 4) {
+		gameTimer += elapsed.asSeconds();
+		if (gameTimer >= 1.6) {
+			gameTimer -= 1.6;
+		}
+	}
 }
 
 void LevelState::render(sf::RenderWindow &window) {
@@ -233,7 +272,7 @@ void LevelState::render(sf::RenderWindow &window) {
 			window.draw(floorDisplay);
 		}
 	}
-	else if (gameState <= 2) {
+	else if (gameState <= 2 || gameState == 4) {
 		if (beat % 4 <= 2) {
 			window.draw(floorDisplay);
 		}
@@ -261,6 +300,9 @@ void LevelState::render(sf::RenderWindow &window) {
 
 		if (gameState == 2) {
 			window.draw(alertOverlay);
+		}
+		else if (gameState == 4 && gameTimer <= .8) {
+			window.draw(pauseOverlay);
 		}
 	}
 	else if (gameState == 3) {
@@ -337,7 +379,7 @@ void LevelState::setupLevel() {
 	else if (level == 4) {
 		levers.push_back(new Lever(this, sf::Vector2f(188, 94)));
 		levers.push_back(new Lever(this, sf::Vector2f(188, 38)));
-		orb = Orb(this, sf::Vector2f(218, 38));
+		orb = Orb(this, sf::Vector2f(218, 68));
 	}
 	else if (level == 5) {
 		orb = Orb(this, sf::Vector2f(218, 125));
@@ -440,7 +482,7 @@ void LevelState::calculateVolume() {
 			int localBeat = beat % 16;
 			if (section >= 1) {
 				if (localBeat % 2 == 0) {
-					setVolume(2.1);
+					setVolume(2.3);
 				}
 			}
 			if (section == 3) {
